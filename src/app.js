@@ -69,7 +69,13 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// API routes will be added here
+// Import routes
+const authRoutes = require('./routes/auth');
+
+// API routes
+app.use('/api/auth', authRoutes);
+
+// Catch-all for undefined API routes
 app.use('/api', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });

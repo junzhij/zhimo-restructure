@@ -90,9 +90,9 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 // 实例方法：更新最后登录时间
-userSchema.methods.updateLastLogin = function() {
+userSchema.methods.updateLastLogin = async function() {
   this.lastLoginAt = new Date();
-  return this.save();
+  return await this.save();
 };
 
 // 静态方法：根据邮箱或用户名查找用户
