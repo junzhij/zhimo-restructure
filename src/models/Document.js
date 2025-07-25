@@ -29,6 +29,11 @@ const documentSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  restructuredContent: {
+    type: String,
+    default: null,
+    maxlength: [50000, '重构内容不能超过50000个字符']
+  },
   metadata: {
     fileSize: {
       type: Number,
@@ -120,13 +125,16 @@ documentSchema.index({ 'syncStatus.lastSynced': -1 });
 documentSchema.index({ 
   title: 'text', 
   markdownContent: 'text',
+  restructuredContent: 'text',
   'tags': 'text'
 }, {
   weights: {
     title: 10,
     tags: 5,
+    restructuredContent: 3,
     markdownContent: 1
-  }
+  },
+  name: 'document_text_search'
 });
 
 // 虚拟字段：文档大小（人类可读格式）

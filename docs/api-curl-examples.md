@@ -126,7 +126,7 @@ curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf \
     "originalFormat": "pdf",
     "processingStatus": "completed",
     "markdownContent": "# 文档标题\n\n这是文档内容...",
-    "restructuredContent": "# 重构后的文档\n\n优化后的内容...",
+    "restructuredContent": "# 重构后的文档\n\n## 1. 优化后的结构\n\n经过AI重构的内容...",
     "metadata": {
       "originalFileName": "example.pdf",
       "fileSize": 1024000,
@@ -134,6 +134,9 @@ curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf \
     }
   }
 }
+```
+
+**注意**: `restructuredContent`字段在AI重构完成后自动填入，如果文档尚未完成AI处理，该字段可能为`null`。
 ```
 
 ### 下载文档
@@ -147,9 +150,20 @@ curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/download \
 ### 获取文档Markdown内容
 
 ```bash
-curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/markdown \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y"
+curl -X GET $BASE_URL/api/documents/{documentId}/markdown \
+  -H "Authorization: Bearer $TOKEN"
 ```
+
+### 获取重构后的内容
+
+```bash
+# 获取AI重构后的内容（如果可用）
+curl -X GET $BASE_URL/api/documents/{documentId} \
+  -H "Authorization: Bearer $TOKEN" \
+  | jq '.data.restructuredContent'
+```
+
+**说明**: `restructuredContent`字段包含AI重构后的优化内容，在文档处理完成后自动生成。如果文档尚未完成AI处理，该字段可能为`null`。
 
 ### 更新文档
 
@@ -418,6 +432,7 @@ echo "🎉 测试完成!"
    - 文档上传后会异步处理
    - 通过 `processingStatus` 字段查看处理状态
    - 状态: `pending` → `processing` → `completed`/`failed`
+   - AI重构后的内容自动填入 `restructuredContent` 字段
 
 5. **AI功能:**
    - 需要配置有效的OpenAI API密钥
