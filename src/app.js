@@ -70,10 +70,10 @@ app.get('/health', async (req, res) => {
 });
 
 // Import routes
-const authRoutes = require('./routes/auth');
+const routes = require('./routes');
 
 // API routes
-app.use('/api/auth', authRoutes);
+app.use('/api', routes);
 
 // Catch-all for undefined API routes
 app.use('/api', (req, res) => {

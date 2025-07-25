@@ -88,9 +88,72 @@ const validateChangePassword = [
     })
 ];
 
+/**
+ * 文档上传验证规则
+ */
+const validateDocumentUpload = [
+  body('title')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('文档标题不能超过200个字符'),
+    
+  body('tags')
+    .optional()
+    .custom((value) => {
+      if (typeof value === 'string') {
+        const tags = value.split(',').map(tag => tag.trim());
+        if (tags.length > 10) {
+          throw new Error('标签数量不能超过10个');
+        }
+        for (const tag of tags) {
+          if (tag.length > 50) {
+            throw new Error('单个标签长度不能超过50个字符');
+          }
+        }
+      }
+      return true;
+    })
+];
+
+/**
+ * URL文档添加验证规则
+ */
+const validateUrlDocument = [
+  body('url')
+    .trim()
+    .isURL()
+    .withMessage('请输入有效的URL地址'),
+    
+  body('title')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('文档标题不能超过200个字符'),
+    
+  body('tags')
+    .optional()
+    .custom((value) => {
+      if (typeof value === 'string') {
+        const tags = value.split(',').map(tag => tag.trim());
+        if (tags.length > 10) {
+          throw new Error('标签数量不能超过10个');
+        }
+        for (const tag of tags) {
+          if (tag.length > 50) {
+            throw new Error('单个标签长度不能超过50个字符');
+          }
+        }
+      }
+      return true;
+    })
+];
+
 module.exports = {
   validateRegister,
   validateLogin,
   validateUpdateProfile,
-  validateChangePassword
+  validateChangePassword,
+  validateDocumentUpload,
+  validateUrlDocument
 };

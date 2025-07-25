@@ -8,7 +8,11 @@
     "dev": "nodemon src/app.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:s3": "node scripts/test-s3.js",
+    "test:s3-connection": "node scripts/test-s3-connection.js",
+    "test:s3-real": "jest tests/s3-real.test.js --forceExit",
+    "test:integration": "jest tests/s3-integration.test.js --forceExit"
   },
   "keywords": [
     "education",
@@ -25,7 +29,7 @@
     "@aws-sdk/lib-storage": "^3.850.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
