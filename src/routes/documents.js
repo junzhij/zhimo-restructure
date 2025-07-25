@@ -213,7 +213,10 @@ router.use((error, req, res, next) => {
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
       return res.status(400).json({
         success: false,
-        message: '意外的文件字段'
+        message: '意外的文件字段',
+        details: '请确保文件字段名为 "document"，且只上传一个文件',
+        expectedField: 'document',
+        hint: '正确的表单字段应该是: <input name="document" type="file" />'
       });
     }
   }

@@ -13,7 +13,9 @@
     "test:s3-connection": "node scripts/test-s3-connection.js",
     "test:s3-real": "jest tests/s3-real.test.js --forceExit",
     "test:integration": "jest tests/s3-integration.test.js --forceExit",
-    "test:ai-endpoints": "node scripts/test-ai-endpoints.js"
+    "test:ai-endpoints": "node scripts/test-ai-endpoints.js",
+    "debug:upload": "node scripts/debug-upload.js",
+    "fix:indexes": "node scripts/fix-index-conflict.js"
   },
   "keywords": [
     "education",

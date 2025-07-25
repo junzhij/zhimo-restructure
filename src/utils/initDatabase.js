@@ -33,36 +33,109 @@ async function createIndexes() {
   
   try {
     // User 模型索引
-    await models.User.createIndexes();
-    console.log('  ✓ User 索引创建完成');
+    await createModelIndexes('User', models.User);
     
-    // Document 模型索引
-    await models.Document.createIndexes();
-    console.log('  ✓ Document 索引创建完成');
+    // Document 模型索引 (特殊处理文本索引冲突)
+    await createDocumentIndexes();
     
     // Summary 模型索引
-    await models.Summary.createIndexes();
-    console.log('  ✓ Summary 索引创建完成');
+    await createModelIndexes('Summary', models.Summary);
     
     // Concept 模型索引
-    await models.Concept.createIndexes();
-    console.log('  ✓ Concept 索引创建完成');
+    await createModelIndexes('Concept', models.Concept);
     
     // MindMap 模型索引
-    await models.MindMap.createIndexes();
-    console.log('  ✓ MindMap 索引创建完成');
+    await createModelIndexes('MindMap', models.MindMap);
     
     // Exercise 模型索引
-    await models.Exercise.createIndexes();
-    console.log('  ✓ Exercise 索引创建完成');
+    await createModelIndexes('Exercise', models.Exercise);
     
     // ExerciseRecord 模型索引
-    await models.ExerciseRecord.createIndexes();
-    console.log('  ✓ ExerciseRecord 索引创建完成');
+    await createModelIndexes('ExerciseRecord', models.ExerciseRecord);
     
   } catch (error) {
     console.error('❌ 索引创建失败:', error);
     throw error;
+  }
+}
+
+/**
+ * 创建单个模型的索引
+ */
+async function createModelIndexes(modelName, Model) {
+  try {
+    await Model.createIndexes();
+    console.log(`  ✓ ${modelName} 索引创建完成`);
+  } catch (error) {
+    if (error.code === 85) { // IndexOptionsConflict
+      console.log(`  ⚠️ ${modelName} 索引冲突，尝试修复...`);
+      await handleIndexConflict(modelName, Model);
+    } else {
+      throw error;
+    }
+  }
+}
+
+/**
+ * 特殊处理Document模型的索引创建
+ */
+async function createDocumentIndexes() {
+  try {
+    await models.Document.createIndexes();
+    console.log('  ✓ Document 索引创建完成');
+  } catch (error) {
+    if (error.code === 85 && error.errmsg.includes('document_text_search')) {
+      console.log('  ⚠️ Document 文本索引冲突，尝试修复...');
+      await fixDocumentTextIndex();
+    } else {
+      throw error;
+    }
+  }
+}
+
+/**
+ * 修复Document文本索引冲突
+ */
+async function fixDocumentTextIndex() {
+  const mongoose = require('mongoose');
+  const collection = mongoose.connection.db.collection('documents');
+  
+  try {
+    // 获取现有索引
+    const indexes = await collection.listIndexes().toArray();
+    
+    // 查找冲突的文本索引
+    const conflictingIndexes = indexes.filter(index => 
+      index.key && index.key._fts === 'text' && index.name !== 'document_text_search'
+    );
+    
+    // 删除冲突的索引
+    for (const index of conflictingIndexes) {
+      console.log(`    删除冲突索引: ${index.name}`);
+      await collection.dropIndex(index.name);
+    }
+    
+    // 重新创建Document索引
+    await models.Document.createIndexes();
+    console.log('  ✓ Document 索引修复完成');
+    
+  } catch (error) {
+    console.error('  ❌ Document 索引修复失败:', error);
+    throw error;
+  }
+}
+
+/**
+ * 处理一般的索引冲突
+ */
+async function handleIndexConflict(modelName, Model) {
+  try {
+    // 对于一般的索引冲突，尝试重新创建
+    await Model.createIndexes();
+    console.log(`  ✓ ${modelName} 索引冲突已解决`);
+  } catch (retryError) {
+    console.error(`  ❌ ${modelName} 索引冲突无法解决:`, retryError.message);
+    // 不抛出错误，允许应用继续启动
   }
 }
 

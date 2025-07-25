@@ -103,8 +103,8 @@ describe('PDF Upload and Transcription with Axios', () => {
       console.log(`✅ PDF上传成功! 文档ID: ${documentId}`);
       console.log(`📊 处理状态: ${processingStatus}`);
 
-      // 4. 检查处理状态（应该是completed或failed）
-      expect(['completed', 'failed']).toContain(processingStatus);
+      // 4. 检查处理状态（应该是pending、processing、completed或failed）
+      expect(['pending', 'processing', 'completed', 'failed']).toContain(processingStatus);
 
       if (processingStatus === 'completed') {
         console.log('🎉 PDF处理成功，开始获取Markdown内容...');

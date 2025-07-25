@@ -15,8 +15,8 @@ TIMESTAMP=$(date +%s)
 curl -X POST 127.0.0.1:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser_'$TIMESTAMP'",
-    "email": "test_'$TIMESTAMP'@example.com",
+    "username": "testuser_1",
+    "email": "test_1@example.com",
     "password": "Test123456!",
     "profile": {
       "displayName": "测试用户"
@@ -46,7 +46,7 @@ curl -X POST 127.0.0.1:3000/api/auth/register \
 curl -X POST 127.0.0.1:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "testuser_'$TIMESTAMP'",
+    "username": "testuser_",
     "password": "Test123456!"
   }'
 ```
@@ -159,7 +159,7 @@ curl -X GET $BASE_URL/api/documents/{documentId}/markdown \
 ```bash
 # 获取AI重构后的内容（如果可用）
 curl -X GET $BASE_URL/api/documents/{documentId} \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
   | jq '.data.restructuredContent'
 ```
 
@@ -189,8 +189,8 @@ curl -X DELETE 127.0.0.1:3000/api/documents/{documentId} \
 ### 文档重构
 
 ```bash
-curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/restructure \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+curl -X GET 127.0.0.1:3000/api/documents/6883d5973da75c7e8069b677/ai/restructure \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzZDU1NDNkYTc1YzdlODA2OWI2M2UiLCJpYXQiOjE3NTM0NzAzNDEsImV4cCI6MTc1NDA3NTE0MX0.OQzYuGRgtrm_nLxD_ukwKiasByEBYCM__aIEAh9P5YQ" \
   -H "Content-Type: application/json" \
   -d '{
     "style": "academic",
@@ -201,8 +201,8 @@ curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/restructur
 ### 生成摘要
 
 ```bash
-curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/summary \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+curl -X GET 127.0.0.1:3000/api/documents/6883d5973da75c7e8069b677/ai/summary \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzZDU1NDNkYTc1YzdlODA2OWI2M2UiLCJpYXQiOjE3NTM0NzAzNDEsImV4cCI6MTc1NDA3NTE0MX0.OQzYuGRgtrm_nLxD_ukwKiasByEBYCM__aIEAh9P5YQ" \
   -H "Content-Type: application/json" \
   -d '{
     "length": "medium",
