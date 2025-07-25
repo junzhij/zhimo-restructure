@@ -6,8 +6,10 @@ const config = {
   PORT: parseInt(process.env.PORT) || 3000,
 
   // Database Configuration
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/zhimo_study_platform',
-  MONGODB_TEST_URI: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/zhimo_study_platform_test',
+  database: {
+    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/zhimo_study_platform',
+    testUri: process.env.MONGODB_TEST_URI || 'mongodb://localhost:27017/zhimo_study_platform_test'
+  },
 
   // JWT Configuration
   JWT_SECRET: process.env.JWT_SECRET || 'default-secret-change-in-production',

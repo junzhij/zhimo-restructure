@@ -9,7 +9,7 @@
   - 配置环境变量管理（dotenv）
   - _需求: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
-- [ ] 2. 配置数据库连接和基础模型
+- [x] 2. 配置数据库连接和基础模型
   - 设置MongoDB连接配置
   - 创建数据库连接工具类
   - 实现基础的数据模型Schema（User, Document, Summary, Concept, MindMap, Exercise, ExerciseRecord）
