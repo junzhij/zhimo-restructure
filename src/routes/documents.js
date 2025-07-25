@@ -133,6 +133,68 @@ router.delete('/:documentId',
   documentController.deleteDocument.bind(documentController)
 );
 
+// AI功能路由
+
+/**
+ * @route   POST /api/documents/:documentId/ai/restructure
+ * @desc    AI文档重构
+ * @access  Private
+ */
+router.post('/:documentId/ai/restructure',
+  authenticateToken,
+  documentController.restructureDocument.bind(documentController)
+);
+
+/**
+ * @route   POST /api/documents/:documentId/ai/summary
+ * @desc    生成文档摘要
+ * @access  Private
+ */
+router.post('/:documentId/ai/summary',
+  authenticateToken,
+  documentController.generateSummary.bind(documentController)
+);
+
+/**
+ * @route   POST /api/documents/:documentId/ai/exercises
+ * @desc    生成练习题
+ * @access  Private
+ */
+router.post('/:documentId/ai/exercises',
+  authenticateToken,
+  documentController.generateExercises.bind(documentController)
+);
+
+/**
+ * @route   POST /api/documents/:documentId/ai/concepts
+ * @desc    提取概念
+ * @access  Private
+ */
+router.post('/:documentId/ai/concepts',
+  authenticateToken,
+  documentController.extractConcepts.bind(documentController)
+);
+
+/**
+ * @route   POST /api/documents/:documentId/ai/mindmap
+ * @desc    生成思维导图
+ * @access  Private
+ */
+router.post('/:documentId/ai/mindmap',
+  authenticateToken,
+  documentController.generateMindMap.bind(documentController)
+);
+
+/**
+ * @route   POST /api/documents/:documentId/ai/process
+ * @desc    批量AI处理
+ * @access  Private
+ */
+router.post('/:documentId/ai/process',
+  authenticateToken,
+  documentController.processWithAI.bind(documentController)
+);
+
 // Error handling middleware for multer
 router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {

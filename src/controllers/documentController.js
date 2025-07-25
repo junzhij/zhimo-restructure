@@ -1,9 +1,11 @@
 const DocumentService = require('../services/DocumentService');
+const AIService = require('../services/AIService');
 const { validationResult } = require('express-validator');
 
 class DocumentController {
   constructor() {
     this.documentService = new DocumentService();
+    this.aiService = new AIService();
   }
 
   /**
@@ -335,6 +337,251 @@ class DocumentController {
       res.status(statusCode).json({
         success: false,
         message: error.message || '文档重新处理失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * AI文档重构
+   */
+  async restructureDocument(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      const { style = 'academic', language = 'zh' } = req.body;
+
+      // 获取文档内容
+      const document = await this.documentService.getDocument(documentId, userId);
+      
+      if (!document.markdownContent) {
+        return res.status(400).json({
+          success: false,
+          message: '文档尚未处理完成，无法进行AI重构'
+        });
+      }
+
+      const restructuredContent = await this.aiService.restructureDocument(
+        document.markdownContent, 
+        { style, language }
+      );
+
+      res.json({
+        success: true,
+        data: {
+          originalContent: document.markdownContent,
+          restructuredContent,
+          options: { style, language }
+        }
+      });
+    } catch (error) {
+      console.error('Restructure document error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'AI文档重构失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 生成文档摘要
+   */
+  async generateSummary(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      const { length = 'medium', language = 'zh', includeKeyPoints = true } = req.body;
+
+      const document = await this.documentService.getDocument(documentId, userId);
+      
+      if (!document.markdownContent) {
+        return res.status(400).json({
+          success: false,
+          message: '文档尚未处理完成，无法生成摘要'
+        });
+      }
+
+      const summary = await this.aiService.generateSummary(
+        document.markdownContent,
+        { length, language, includeKeyPoints }
+      );
+
+      res.json({
+        success: true,
+        data: {
+          summary,
+          options: { length, language, includeKeyPoints }
+        }
+      });
+    } catch (error) {
+      console.error('Generate summary error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '生成摘要失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 生成练习题
+   */
+  async generateExercises(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      const { 
+        count = 5, 
+        types = ['multiple_choice', 'true_false', 'short_answer'],
+        difficulty = 'medium',
+        language = 'zh'
+      } = req.body;
+
+      const document = await this.documentService.getDocument(documentId, userId);
+      
+      if (!document.markdownContent) {
+        return res.status(400).json({
+          success: false,
+          message: '文档尚未处理完成，无法生成练习题'
+        });
+      }
+
+      const exercises = await this.aiService.generateExercises(
+        document.markdownContent,
+        { count, types, difficulty, language }
+      );
+
+      res.json({
+        success: true,
+        data: {
+          exercises,
+          options: { count, types, difficulty, language }
+        }
+      });
+    } catch (error) {
+      console.error('Generate exercises error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '生成练习题失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 提取概念
+   */
+  async extractConcepts(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      const { maxConcepts = 10, language = 'zh' } = req.body;
+
+      const document = await this.documentService.getDocument(documentId, userId);
+      
+      if (!document.markdownContent) {
+        return res.status(400).json({
+          success: false,
+          message: '文档尚未处理完成，无法提取概念'
+        });
+      }
+
+      const concepts = await this.aiService.extractConcepts(
+        document.markdownContent,
+        { maxConcepts, language }
+      );
+
+      res.json({
+        success: true,
+        data: {
+          concepts,
+          options: { maxConcepts, language }
+        }
+      });
+    } catch (error) {
+      console.error('Extract concepts error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '提取概念失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 生成思维导图
+   */
+  async generateMindMap(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      const { maxNodes = 20, language = 'zh', style = 'mindmap' } = req.body;
+
+      const document = await this.documentService.getDocument(documentId, userId);
+      
+      if (!document.markdownContent) {
+        return res.status(400).json({
+          success: false,
+          message: '文档尚未处理完成，无法生成思维导图'
+        });
+      }
+
+      const mindMap = await this.aiService.generateMindMap(
+        document.markdownContent,
+        { maxNodes, language, style }
+      );
+
+      res.json({
+        success: true,
+        data: {
+          mindMap,
+          isValidSyntax: this.aiService.validateMermaidSyntax(mindMap),
+          options: { maxNodes, language, style }
+        }
+      });
+    } catch (error) {
+      console.error('Generate mind map error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '生成思维导图失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 批量AI处理
+   */
+  async processWithAI(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      const options = req.body;
+
+      const document = await this.documentService.getDocument(documentId, userId);
+      
+      if (!document.markdownContent) {
+        return res.status(400).json({
+          success: false,
+          message: '文档尚未处理完成，无法进行AI处理'
+        });
+      }
+
+      const results = await this.aiService.processDocument(
+        document.markdownContent,
+        options
+      );
+
+      res.json({
+        success: true,
+        data: results
+      });
+    } catch (error) {
+      console.error('Process with AI error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'AI批量处理失败',
         error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
