@@ -357,17 +357,17 @@ done
 if [ "$STATUS" = "completed" ]; then
   echo "🎯 测试AI功能..."
   
-  echo "📝 生成摘要..."
-  curl -s -X POST 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/summary \
-    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
-    -H "Content-Type: application/json" \
-    -d '{"length": "medium", "language": "zh"}' | jq '.data.summary' | head -3
+  echo "📝 获取摘要..."
+  curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/summary \
+    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data.summaries[0].content' | head -3
   
-  echo "🧠 提取概念..."
-  curl -s -X POST 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/concepts \
-    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
-    -H "Content-Type: application/json" \
-    -d '{"maxConcepts": 5, "language": "zh"}' | jq '.data.concepts[].term'
+  echo "🧠 获取概念..."
+  curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/concepts \
+    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data.concepts[].term'
+  
+  echo "🔄 获取重构内容..."
+  curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/restructure \
+    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data.restructuredContent' | head -3
 fi
 
 echo "📋 获取文档列表..."

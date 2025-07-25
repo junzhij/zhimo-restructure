@@ -12,7 +12,8 @@
     "test:s3": "node scripts/test-s3.js",
     "test:s3-connection": "node scripts/test-s3-connection.js",
     "test:s3-real": "jest tests/s3-real.test.js --forceExit",
-    "test:integration": "jest tests/s3-integration.test.js --forceExit"
+    "test:integration": "jest tests/s3-integration.test.js --forceExit",
+    "test:ai-endpoints": "node scripts/test-ai-endpoints.js"
   },
   "keywords": [
     "education",

@@ -136,23 +136,23 @@ router.delete('/:documentId',
 // AI功能路由
 
 /**
- * @route   POST /api/documents/:documentId/ai/restructure
- * @desc    AI文档重构
+ * @route   GET /api/documents/:documentId/ai/restructure
+ * @desc    获取AI文档重构结果
  * @access  Private
  */
-router.post('/:documentId/ai/restructure',
+router.get('/:documentId/ai/restructure',
   authenticateToken,
-  documentController.restructureDocument.bind(documentController)
+  documentController.getRestructuredContent.bind(documentController)
 );
 
 /**
- * @route   POST /api/documents/:documentId/ai/summary
- * @desc    生成文档摘要
+ * @route   GET /api/documents/:documentId/ai/summary
+ * @desc    获取文档摘要
  * @access  Private
  */
-router.post('/:documentId/ai/summary',
+router.get('/:documentId/ai/summary',
   authenticateToken,
-  documentController.generateSummary.bind(documentController)
+  documentController.getDocumentSummary.bind(documentController)
 );
 
 /**
@@ -166,13 +166,13 @@ router.post('/:documentId/ai/exercises',
 );
 
 /**
- * @route   POST /api/documents/:documentId/ai/concepts
- * @desc    提取概念
+ * @route   GET /api/documents/:documentId/ai/concepts
+ * @desc    获取提取的概念
  * @access  Private
  */
-router.post('/:documentId/ai/concepts',
+router.get('/:documentId/ai/concepts',
   authenticateToken,
-  documentController.extractConcepts.bind(documentController)
+  documentController.getDocumentConcepts.bind(documentController)
 );
 
 /**

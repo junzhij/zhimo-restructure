@@ -348,82 +348,86 @@ class DocumentController {
   }
 
   /**
-   * AI文档重构
+   * 获取AI文档重构结果
    */
-  async restructureDocument(req, res) {
+  async getRestructuredContent(req, res) {
     try {
       const { documentId } = req.params;
       const userId = req.user.id;
-      const { style = 'academic', language = 'zh' } = req.body;
 
       // 获取文档内容
       const document = await this.documentService.getDocument(documentId, userId);
       
-      if (!document.markdownContent) {
-        return res.status(400).json({
+      if (!document.restructuredContent) {
+        return res.status(404).json({
           success: false,
-          message: '文档尚未处理完成，无法进行AI重构'
+          message: '文档尚未完成AI重构处理'
         });
       }
-
-      const restructuredContent = await this.aiService.restructureDocument(
-        document.markdownContent, 
-        { style, language }
-      );
 
       res.json({
         success: true,
         data: {
           originalContent: document.markdownContent,
-          restructuredContent,
-          options: { style, language }
+          restructuredContent: document.restructuredContent,
+          processingStatus: document.processingStatus
         }
       });
     } catch (error) {
-      console.error('Restructure document error:', error);
-      res.status(500).json({
+      console.error('Get restructured content error:', error);
+      const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
+      
+      res.status(statusCode).json({
         success: false,
-        message: error.message || 'AI文档重构失败',
+        message: error.message || '获取AI重构内容失败',
         error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   }
 
   /**
-   * 生成文档摘要
+   * 获取文档摘要
    */
-  async generateSummary(req, res) {
+  async getDocumentSummary(req, res) {
     try {
       const { documentId } = req.params;
       const userId = req.user.id;
-      const { length = 'medium', language = 'zh', includeKeyPoints = true } = req.body;
+      const { type } = req.query; // 可选：指定摘要类型
 
-      const document = await this.documentService.getDocument(documentId, userId);
+      // 验证文档存在且属于当前用户
+      await this.documentService.getDocument(documentId, userId);
       
-      if (!document.markdownContent) {
-        return res.status(400).json({
+      // 从Summary集合中查询摘要
+      const Summary = require('../models/Summary');
+      const summaries = await Summary.findByDocument(documentId, { type });
+
+      if (!summaries || summaries.length === 0) {
+        return res.status(404).json({
           success: false,
-          message: '文档尚未处理完成，无法生成摘要'
+          message: '文档摘要尚未生成'
         });
       }
-
-      const summary = await this.aiService.generateSummary(
-        document.markdownContent,
-        { length, language, includeKeyPoints }
-      );
 
       res.json({
         success: true,
         data: {
-          summary,
-          options: { length, language, includeKeyPoints }
+          summaries: summaries.map(summary => ({
+            id: summary._id,
+            type: summary.type,
+            content: summary.content,
+            wordCount: summary.metadata.wordCount,
+            generatedAt: summary.generatedAt,
+            aiModel: summary.metadata.aiModel
+          }))
         }
       });
     } catch (error) {
-      console.error('Generate summary error:', error);
-      res.status(500).json({
+      console.error('Get document summary error:', error);
+      const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
+      
+      res.status(statusCode).json({
         success: false,
-        message: error.message || '生成摘要失败',
+        message: error.message || '获取文档摘要失败',
         error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
@@ -475,40 +479,57 @@ class DocumentController {
   }
 
   /**
-   * 提取概念
+   * 获取提取的概念
    */
-  async extractConcepts(req, res) {
+  async getDocumentConcepts(req, res) {
     try {
       const { documentId } = req.params;
       const userId = req.user.id;
-      const { maxConcepts = 10, language = 'zh' } = req.body;
+      const { category, importance, limit } = req.query;
 
-      const document = await this.documentService.getDocument(documentId, userId);
+      // 验证文档存在且属于当前用户
+      await this.documentService.getDocument(documentId, userId);
       
-      if (!document.markdownContent) {
-        return res.status(400).json({
+      // 从Concept集合中查询概念
+      const Concept = require('../models/Concept');
+      const options = {};
+      
+      if (category) options.category = category;
+      if (importance) options.importance = parseInt(importance);
+      if (limit) options.limit = parseInt(limit);
+
+      const concepts = await Concept.findByDocument(documentId, options);
+
+      if (!concepts || concepts.length === 0) {
+        return res.status(404).json({
           success: false,
-          message: '文档尚未处理完成，无法提取概念'
+          message: '文档概念尚未提取'
         });
       }
-
-      const concepts = await this.aiService.extractConcepts(
-        document.markdownContent,
-        { maxConcepts, language }
-      );
 
       res.json({
         success: true,
         data: {
-          concepts,
-          options: { maxConcepts, language }
+          concepts: concepts.map(concept => ({
+            id: concept._id,
+            term: concept.term,
+            definition: concept.definition,
+            category: concept.category,
+            importance: concept.importance,
+            occurrenceCount: concept.occurrences.length,
+            extractionConfidence: concept.metadata.extractionConfidence,
+            createdAt: concept.createdAt
+          })),
+          total: concepts.length
         }
       });
     } catch (error) {
-      console.error('Extract concepts error:', error);
-      res.status(500).json({
+      console.error('Get document concepts error:', error);
+      const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
+      
+      res.status(statusCode).json({
         success: false,
-        message: error.message || '提取概念失败',
+        message: error.message || '获取文档概念失败',
         error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
