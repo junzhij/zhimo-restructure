@@ -1,4 +1,5 @@
 const DocumentService = require('../services/DocumentService');
+const FileExtractService = require('../services/FileExtractService');
 const AIService = require('../services/AIService');
 const { validationResult } = require('express-validator');
 
@@ -37,12 +38,16 @@ class DocumentController {
         tags: req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : []
       };
 
-      const result = await this.documentService.uploadDocument(req.file, userId, metadata);
+      // 上传文档到S3并创建MongoDB记录（会自动触发文件提取和AI处理）
+      const uploadResult = await this.documentService.uploadDocument(req.file, userId, metadata);
 
       res.status(201).json({
         success: true,
-        message: '文档上传成功',
-        data: result
+        message: '文档上传成功，正在处理中',
+        data: {
+          document: uploadResult.document,
+          processingStatus: 'pending'
+        }
       });
     } catch (error) {
       console.error('Upload document error:', error);

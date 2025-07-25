@@ -16,7 +16,8 @@ const summarySchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, '摘要类型是必需的'],
-    enum: ['oneline', 'detailed', 'keypoints'],
+    enum: ['ai_generated', 'manual', 'oneline', 'detailed', 'keypoints'],
+    default: 'ai_generated',
     index: true
   },
   content: {
