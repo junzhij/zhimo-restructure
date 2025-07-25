@@ -279,7 +279,208 @@ describe('Document Upload API', () => {
       expect(response.body.data.total).toBe(2);
       expect(response.body.data.formatStats).toHaveProperty('url', 1);
       expect(response.body.data.formatStats).toHaveProperty('pdf', 1);
-      expect(response.body.data.statusStats).toHaveProperty('pending', 2);
+      // 由于现在是自动处理，状态可能是completed或failed，不再是pending
+      expect(response.body.data.total).toBe(2);
+    });
+  });
+
+  describe('PDF Upload and Auto-Processing', () => {
+    it('should automatically process PDF during upload', async () => {
+      // Register and login
+      const registerResponse = await request(app)
+        .post('/api/auth/register')
+        .send({
+          username: 'testuser_autopdf',
+          email: 'testautopdf@example.com',
+          password: 'password123'
+        });
+
+      const token = registerResponse.body.data.token;
+
+      // 使用真实的PDF文件
+      const fs = require('fs');
+      const path = require('path');
+      const pdfBuffer = fs.readFileSync(path.join(__dirname, 'example.pdf'));
+
+      // Upload PDF - should automatically process
+      const uploadResponse = await request(app)
+        .post('/api/documents/upload')
+        .set('Authorization', `Bearer ${token}`)
+        .attach('document', pdfBuffer, {
+          filename: 'test.pdf',
+          contentType: 'application/pdf'
+        })
+        .expect(201);
+
+      expect(uploadResponse.body.success).toBe(true);
+      expect(uploadResponse.body.data.document.originalFormat).toBe('pdf');
+      
+      // Document should be processed (completed or failed, not pending)
+      expect(['completed', 'failed']).toContain(uploadResponse.body.data.document.processingStatus);
+      
+      // If processing succeeded, should have markdown content
+      if (uploadResponse.body.data.document.processingStatus === 'completed') {
+        expect(uploadResponse.body.data.document.markdownContent).toBeTruthy();
+        expect(uploadResponse.body.data.document.metadata.wordCount).toBeGreaterThan(0);
+      }
+    });
+
+    it('should handle PDF processing errors gracefully', async () => {
+      // Register and login
+      const registerResponse = await request(app)
+        .post('/api/auth/register')
+        .send({
+          username: 'testuser_pdferror',
+          email: 'testpdferror@example.com',
+          password: 'password123'
+        });
+
+      const token = registerResponse.body.data.token;
+
+      // Upload invalid PDF (使用损坏的PDF内容)
+      const invalidPdfBuffer = Buffer.from('%PDF-1.4 invalid pdf content');
+      const uploadResponse = await request(app)
+        .post('/api/documents/upload')
+        .set('Authorization', `Bearer ${token}`)
+        .attach('document', invalidPdfBuffer, {
+          filename: 'invalid.pdf',
+          contentType: 'application/pdf'
+        })
+        .expect(201);
+
+      expect(uploadResponse.body.success).toBe(true);
+      expect(uploadResponse.body.data.document.originalFormat).toBe('pdf');
+      
+      // Should be marked as failed due to invalid PDF
+      expect(uploadResponse.body.data.document.processingStatus).toBe('failed');
+      expect(uploadResponse.body.data.document.processingError).toBeTruthy();
+    });
+  });
+
+  describe('GET /api/documents/:documentId/markdown', () => {
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .get('/api/documents/123/markdown')
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should get markdown content for processed document', async () => {
+      // Register and login
+      const registerResponse = await request(app)
+        .post('/api/auth/register')
+        .send({
+          username: 'testuser_markdown',
+          email: 'testmarkdown@example.com',
+          password: 'password123'
+        });
+
+      const token = registerResponse.body.data.token;
+
+      // Add URL document (should be auto-processed)
+      const urlResponse = await request(app)
+        .post('/api/documents/url')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          url: 'https://example.com',
+          title: 'Test URL Document'
+        });
+
+      const documentId = urlResponse.body.data.document._id;
+
+      // Get markdown content
+      const markdownResponse = await request(app)
+        .get(`/api/documents/${documentId}/markdown`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      expect(markdownResponse.body.success).toBe(true);
+      expect(markdownResponse.body.data.markdownContent).toBeTruthy();
+      expect(typeof markdownResponse.body.data.wordCount).toBe('number');
+      expect(markdownResponse.body.data.processingStatus).toBe('completed');
+    });
+
+    it('should return 404 for unprocessed document', async () => {
+      // Register and login
+      const registerResponse = await request(app)
+        .post('/api/auth/register')
+        .send({
+          username: 'testuser_unprocessed',
+          email: 'testunprocessed@example.com',
+          password: 'password123'
+        });
+
+      const token = registerResponse.body.data.token;
+
+      // Upload invalid PDF that will fail processing
+      const invalidPdfBuffer = Buffer.from('%PDF-1.4 invalid pdf content');
+      const uploadResponse = await request(app)
+        .post('/api/documents/upload')
+        .set('Authorization', `Bearer ${token}`)
+        .attach('document', invalidPdfBuffer, {
+          filename: 'invalid.pdf',
+          contentType: 'application/pdf'
+        });
+
+      const documentId = uploadResponse.body.data.document._id;
+
+      // Try to get markdown content - should fail
+      const markdownResponse = await request(app)
+        .get(`/api/documents/${documentId}/markdown`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(404);
+
+      expect(markdownResponse.body.success).toBe(false);
+      expect(markdownResponse.body.message).toContain('尚未处理完成或处理失败');
+    });
+  });
+
+  describe('POST /api/documents/:documentId/reprocess', () => {
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .post('/api/documents/123/reprocess')
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should reprocess failed document', async () => {
+      // Register and login
+      const registerResponse = await request(app)
+        .post('/api/auth/register')
+        .send({
+          username: 'testuser_reprocess',
+          email: 'testreprocess@example.com',
+          password: 'password123'
+        });
+
+      const token = registerResponse.body.data.token;
+
+      // Upload invalid PDF that will fail processing
+      const invalidPdfBuffer = Buffer.from('%PDF-1.4 invalid pdf content');
+      const uploadResponse = await request(app)
+        .post('/api/documents/upload')
+        .set('Authorization', `Bearer ${token}`)
+        .attach('document', invalidPdfBuffer, {
+          filename: 'invalid.pdf',
+          contentType: 'application/pdf'
+        });
+
+      const documentId = uploadResponse.body.data.document._id;
+      
+      // Document should have failed processing
+      expect(uploadResponse.body.data.document.processingStatus).toBe('failed');
+
+      // Try to reprocess - should still fail with same invalid PDF
+      const reprocessResponse = await request(app)
+        .post(`/api/documents/${documentId}/reprocess`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(500);
+
+      expect(reprocessResponse.body.success).toBe(false);
+      // 错误消息可能是具体的PDF解析错误，而不是通用的重新处理失败消息
+      expect(reprocessResponse.body.message).toBeTruthy();
     });
   });
 

@@ -104,6 +104,26 @@ router.post('/url',
 );
 
 /**
+ * @route   GET /api/documents/:documentId/markdown
+ * @desc    获取文档的Markdown内容
+ * @access  Private
+ */
+router.get('/:documentId/markdown',
+  authenticateToken,
+  documentController.getMarkdownContent.bind(documentController)
+);
+
+/**
+ * @route   POST /api/documents/:documentId/reprocess
+ * @desc    重新处理文档（如果之前处理失败）
+ * @access  Private
+ */
+router.post('/:documentId/reprocess',
+  authenticateToken,
+  documentController.reprocessDocument.bind(documentController)
+);
+
+/**
  * @route   DELETE /api/documents/:documentId
  * @desc    删除文档
  * @access  Private

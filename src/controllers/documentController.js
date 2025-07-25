@@ -267,6 +267,80 @@ class DocumentController {
   }
 
   /**
+   * 获取文档的Markdown内容
+   */
+  async getMarkdownContent(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+
+      const document = await this.documentService.getDocument(documentId, userId);
+
+      if (!document.markdownContent) {
+        return res.status(404).json({
+          success: false,
+          message: '文档尚未处理完成或处理失败'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          markdownContent: document.markdownContent,
+          wordCount: document.metadata.wordCount || 0,
+          processingStatus: document.processingStatus
+        }
+      });
+    } catch (error) {
+      console.error('Get markdown content error:', error);
+      const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
+      
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || '获取Markdown内容失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 重新处理文档（如果之前处理失败）
+   */
+  async reprocessDocument(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+
+      // 验证文档存在且属于当前用户
+      const document = await this.documentService.getDocument(documentId, userId);
+
+      if (document.processingStatus === 'processing') {
+        return res.status(400).json({
+          success: false,
+          message: '文档正在处理中，请稍后再试'
+        });
+      }
+
+      const result = await this.documentService.parseAndConvertDocument(documentId);
+
+      res.json({
+        success: true,
+        message: '文档重新处理成功',
+        data: result
+      });
+    } catch (error) {
+      console.error('Reprocess document error:', error);
+      const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
+      
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || '文档重新处理失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
    * 格式化文件大小
    */
   formatFileSize(bytes) {
