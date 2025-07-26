@@ -99,7 +99,7 @@ curl -X POST 127.0.0.1:3000/api/documents/upload \
 
 ```bash
 curl -X GET 127.0.0.1:3000/api/documents \
-  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
 ```
 
 **带查询参数:**

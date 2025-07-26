@@ -76,7 +76,7 @@ class DocumentController {
     } catch (error) {
       console.error('Get document error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '获取文档失败',
@@ -110,7 +110,10 @@ class DocumentController {
 
       res.json({
         success: true,
-        data: result.documents,
+        data: result.documents.map(doc => ({
+          _id: doc._id,
+          title: doc.title
+        })),
         pagination: result.pagination
       });
     } catch (error) {
@@ -140,7 +143,7 @@ class DocumentController {
     } catch (error) {
       console.error('Delete document error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '删除文档失败',
@@ -159,7 +162,7 @@ class DocumentController {
 
       // 获取文档信息
       const document = await this.documentService.getDocument(documentId, userId);
-      
+
       if (!document.filePath) {
         return res.status(404).json({
           success: false,
@@ -169,17 +172,17 @@ class DocumentController {
 
       // 从S3获取文件流
       const fileStream = await this.documentService.getFileStream(document.filePath);
-      
+
       // 设置响应头
       res.setHeader('Content-Type', document.metadata.mimeType);
       res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(document.metadata.originalFileName)}"`);
-      
+
       // 流式传输文件
       fileStream.pipe(res);
     } catch (error) {
       console.error('Download document error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '下载文档失败',
@@ -194,21 +197,21 @@ class DocumentController {
   async getDocumentStats(req, res) {
     try {
       const userId = req.user.id;
-      
+
       // 这里可以添加更复杂的统计查询
       const stats = await this.documentService.listUserDocuments(userId, { limit: 1000 });
-      
+
       const formatStats = {};
       const statusStats = {};
       let totalSize = 0;
-      
+
       stats.documents.forEach(doc => {
         // 格式统计
         formatStats[doc.originalFormat] = (formatStats[doc.originalFormat] || 0) + 1;
-        
+
         // 状态统计
         statusStats[doc.processingStatus] = (statusStats[doc.processingStatus] || 0) + 1;
-        
+
         // 总大小
         totalSize += doc.metadata.fileSize || 0;
       });
@@ -250,7 +253,7 @@ class DocumentController {
 
       const userId = req.user.id;
       const { url, title, tags } = req.body;
-      
+
       const metadata = {
         title,
         tags: tags ? tags.split(',').map(tag => tag.trim()) : []
@@ -301,7 +304,7 @@ class DocumentController {
     } catch (error) {
       console.error('Get markdown content error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '获取Markdown内容失败',
@@ -338,7 +341,7 @@ class DocumentController {
     } catch (error) {
       console.error('Reprocess document error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '文档重新处理失败',
@@ -357,7 +360,7 @@ class DocumentController {
 
       // 获取文档内容
       const document = await this.documentService.getDocument(documentId, userId);
-      
+
       if (!document.restructuredContent) {
         return res.status(404).json({
           success: false,
@@ -376,7 +379,7 @@ class DocumentController {
     } catch (error) {
       console.error('Get restructured content error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '获取AI重构内容失败',
@@ -396,7 +399,7 @@ class DocumentController {
 
       // 验证文档存在且属于当前用户
       await this.documentService.getDocument(documentId, userId);
-      
+
       // 从Summary集合中查询摘要
       const Summary = require('../models/Summary');
       const summaries = await Summary.findByDocument(documentId, { type });
@@ -424,7 +427,7 @@ class DocumentController {
     } catch (error) {
       console.error('Get document summary error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '获取文档摘要失败',
@@ -440,15 +443,15 @@ class DocumentController {
     try {
       const { documentId } = req.params;
       const userId = req.user.id;
-      const { 
-        count = 5, 
+      const {
+        count = 5,
         types = ['multiple_choice', 'true_false', 'short_answer'],
         difficulty = 'medium',
         language = 'zh'
       } = req.body;
 
       const document = await this.documentService.getDocument(documentId, userId);
-      
+
       if (!document.markdownContent) {
         return res.status(400).json({
           success: false,
@@ -459,10 +462,10 @@ class DocumentController {
       const result = await this.aiService.generateExercises(
         document.markdownContent,
         document.title,
-        { 
-          count, 
-          types, 
-          difficulty, 
+        {
+          count,
+          types,
+          difficulty,
           language,
           documentId,
           userId,
@@ -500,11 +503,11 @@ class DocumentController {
 
       // 验证文档存在且属于当前用户
       await this.documentService.getDocument(documentId, userId);
-      
+
       // 从Concept集合中查询概念
       const Concept = require('../models/Concept');
       const options = {};
-      
+
       if (category) options.category = category;
       if (importance) options.importance = parseInt(importance);
       if (limit) options.limit = parseInt(limit);
@@ -537,7 +540,7 @@ class DocumentController {
     } catch (error) {
       console.error('Get document concepts error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '获取文档概念失败',
@@ -556,7 +559,7 @@ class DocumentController {
       const { maxNodes = 20, language = 'zh', style = 'mindmap' } = req.body;
 
       const document = await this.documentService.getDocument(documentId, userId);
-      
+
       if (!document.markdownContent) {
         return res.status(400).json({
           success: false,
@@ -566,9 +569,9 @@ class DocumentController {
 
       const result = await this.aiService.generateMindMap(
         document.markdownContent,
-        { 
-          maxNodes, 
-          language, 
+        {
+          maxNodes,
+          language,
           style,
           documentId,
           userId,
@@ -607,7 +610,7 @@ class DocumentController {
       const options = req.body;
 
       const document = await this.documentService.getDocument(documentId, userId);
-      
+
       if (!document.markdownContent) {
         return res.status(400).json({
           success: false,
@@ -645,14 +648,14 @@ class DocumentController {
   async getExercisesList(req, res) {
     try {
       const userId = req.user.id;
-      
+
       const Exercise = require('../models/Exercise');
-      const exercises = await Exercise.find({ 
-        userId, 
-        isDeleted: false 
+      const exercises = await Exercise.find({
+        userId,
+        isDeleted: false
       })
-      .select('title documentId createdAt')
-      .sort({ createdAt: -1 });
+        .select('title documentId createdAt')
+        .sort({ createdAt: -1 });
 
       res.json({
         success: true,
@@ -680,14 +683,14 @@ class DocumentController {
     try {
       const { exerciseId } = req.params;
       const userId = req.user.id;
-      
+
       const Exercise = require('../models/Exercise');
-      const exercise = await Exercise.findOne({ 
-        _id: exerciseId, 
-        userId, 
-        isDeleted: false 
+      const exercise = await Exercise.findOne({
+        _id: exerciseId,
+        userId,
+        isDeleted: false
       })
-      .select('title questions metadata settings');
+        .select('title questions metadata settings');
 
       if (!exercise) {
         return res.status(404).json({
@@ -715,7 +718,7 @@ class DocumentController {
     } catch (error) {
       console.error('Get exercise detail error:', error);
       const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
-      
+
       res.status(statusCode).json({
         success: false,
         message: error.message || '获取练习题详情失败',
@@ -729,11 +732,11 @@ class DocumentController {
    */
   formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }
