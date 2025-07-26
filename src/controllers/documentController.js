@@ -133,7 +133,6 @@ class DocumentController {
       res.json({
         success: true,
         data: result.documents.map(doc => ({
-          onProcess: !IfCompleteAllSteps(doc.processingStatus),
           hasBothSummaryAndConcept: summaryDocSet.has(doc._id.toString()) && conceptDocSet.has(doc._id.toString()),
           _id: doc._id,
           title: doc.title,
