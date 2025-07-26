@@ -107,10 +107,34 @@ class DocumentController {
       });
 
       const result = await this.documentService.listUserDocuments(userId, filters);
+      
+      // 导入模型用于检查数据是否存在
+      const Summary = require('../models/Summary');
+      const Concept = require('../models/Concept');
+      
+      // 批量检查所有文档的 Summary 和 Concept 数据
+      const documentIds = result.documents.map(doc => doc._id);
+      
+      const [summaryDocs, conceptDocs] = await Promise.all([
+        Summary.find({ 
+          documentId: { $in: documentIds }, 
+          isDeleted: false 
+        }).distinct('documentId'),
+        Concept.find({ 
+          documentId: { $in: documentIds }, 
+          isDeleted: false 
+        }).distinct('documentId')
+      ]);
+      
+      // 转换为Set以便快速查找
+      const summaryDocSet = new Set(summaryDocs.map(id => id.toString()));
+      const conceptDocSet = new Set(conceptDocs.map(id => id.toString()));
 
       res.json({
         success: true,
         data: result.documents.map(doc => ({
+          onProcess: !IfCompleteAllSteps(doc.processingStatus),
+          hasBothSummaryAndConcept: summaryDocSet.has(doc._id.toString()) && conceptDocSet.has(doc._id.toString()),
           _id: doc._id,
           title: doc.title,
           createdAt: doc.createdAt
