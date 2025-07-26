@@ -136,7 +136,9 @@ class DocumentController {
           hasBothSummaryAndConcept: summaryDocSet.has(doc._id.toString()) && conceptDocSet.has(doc._id.toString()),
           _id: doc._id,
           title: doc.title,
-          createdAt: doc.createdAt
+          createdAt: doc.createdAt,
+          fileSize: doc.metadata?.fileSize || 0,
+          readableFileSize: this.formatFileSize(doc.metadata?.fileSize || 0)
         }))
       });
     } catch (error) {

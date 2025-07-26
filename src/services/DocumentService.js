@@ -35,6 +35,8 @@ class DocumentService {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { extension: '.docx', category: 'document' },
       'application/msword': { extension: '.doc', category: 'document' },
       'text/plain': { extension: '.txt', category: 'text' },
+      'text/markdown': { extension: '.md', category: 'text' },
+      'text/x-markdown': { extension: '.md', category: 'text' },
       'image/jpeg': { extension: '.jpg', category: 'image' },
       'image/png': { extension: '.png', category: 'image' }
     };
@@ -406,10 +408,12 @@ class DocumentService {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
       'application/msword': 'doc',
       'text/plain': 'txt',
+      'text/markdown': 'markdown',
+      'text/x-markdown': 'markdown',
       'image/jpeg': 'jpg',
       'image/png': 'png'
     };
-    return formatMap[mimeType] || 'unknown';
+    return formatMap[mimeType] || 'other';
   }
 
   /**
