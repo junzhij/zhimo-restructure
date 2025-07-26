@@ -23,12 +23,12 @@ class AIService {
       const config = {
         apiKey: process.env.OPENAI_API_KEY,
       };
-      
+
       // 如果设置了自定义baseURL，则使用它
       if (process.env.OPENAI_BASE_URL) {
         config.baseURL = process.env.OPENAI_BASE_URL;
       }
-      
+
       this.openai = new OpenAI(config);
       logger.info('OpenAI客户端初始化成功', {
         baseURL: config.baseURL || 'https://api.openai.com/v1',
@@ -38,12 +38,12 @@ class AIService {
       this.openai = null;
       logger.error('OpenAI API密钥未配置');
     }
-    
+
     // 从环境变量获取模型配置
-    this.model = process.env.OPENAI_MODEL    ;
+    this.model = process.env.OPENAI_MODEL;
     this.temperature = parseFloat(process.env.AI_TEMPERATURE) || 0.3;
     this.maxTokens = parseInt(process.env.AI_MAX_TOKENS) || 4000;
-    
+
     logger.info('AIService配置加载完成', {
       model: this.model,
       temperature: this.temperature,
@@ -70,9 +70,9 @@ class AIService {
    */
   async restructureDocument(content, options = {}) {
     this._checkOpenAIAvailable();
-    
+
     const { style = 'academic', language = 'zh' } = options;
-    
+
     const prompt = `请对以下文档内容进行重构，要求：
 1. 保持原有信息的完整性
 2. 优化文档结构和逻辑
@@ -109,9 +109,9 @@ ${content}
    */
   async generateSummary(content, options = {}) {
     this._checkOpenAIAvailable();
-    
+
     const { length = 'medium', language = 'zh', includeKeyPoints = true } = options;
-    
+
     const lengthMap = {
       short: '100-200字',
       medium: '300-500字',
@@ -151,9 +151,9 @@ ${content}
    */
   async generateExercises(content, options = {}) {
     this._checkOpenAIAvailable();
-    
-    const { 
-      count = 5, 
+
+    const {
+      count = 5,
       types = ['multiple_choice', 'true_false', 'short_answer'],
       difficulty = 'medium',
       language = 'zh'
@@ -218,7 +218,7 @@ ${content}`;
    */
   async extractConcepts(content, options = {}) {
     this._checkOpenAIAvailable();
-    
+
     const { maxConcepts = 10, language = 'zh' } = options;
 
     const prompt = `从以下文档中提取关键概念，要求：
@@ -277,9 +277,11 @@ ${content}`;
    * 生成思维导图 - 基于文档内容生成Mermaid格式的思维导图
    * @param {string} content - 文档内容
    * @param {Object} options - 生成选项
-   * @returns {Promise<string>} Mermaid格式的思维导图代码
+   * @returns {Promise<Object>} 包含title和mermaid内容的对象
    */
   async generateMindMap(content, options = {}) {
+    this._checkOpenAIAvailable();
+
     const { maxNodes = 20, language = 'zh', style = 'mindmap' } = options;
 
     const prompt = `基于以下文档内容生成思维导图，要求：
@@ -287,8 +289,12 @@ ${content}`;
 2. 最多${maxNodes}个节点
 3. 语言：${language}
 4. 样式：${style}
-5. 只输出Mermaid代码，不要包含任何其他文字
-6. 确保语法正确，可以直接渲染
+5. 必须严格按照以下JSON格式输出，不要包含任何其他文字：
+
+{
+  "title": "思维导图标题",
+  "mermaid": "mindmap代码内容"
+}
 
 ## Mermaid Mindmap 语法规则：
 - 必须以 \`mindmap\` 开头
@@ -322,7 +328,7 @@ mindmap
 文档内容：
 ${content}
 
-请生成Mermaid思维导图代码：`;
+请生成JSON格式的思维导图：`;
 
     try {
       const response = await this.openai.chat.completions.create({
@@ -332,15 +338,18 @@ ${content}
         max_tokens: this.maxTokens,
       });
 
-      const mermaidCode = response.choices[0].message.content.trim();
-      console.log(mermaidCode)
-      // 验证Mermaid语法
-      // if (!this.validateMermaidSyntax(mermaidCode)) {
-      //   throw new Error('生成的Mermaid代码语法不正确');
-      // }
+      const result = JSON.parse(response.choices[0].message.content);
 
-      return mermaidCode;
+      // 验证返回的数据结构
+      if (!result.title || !result.mermaid) {
+        throw new Error('AI返回的JSON格式不正确，缺少title或mermaid字段');
+      }
+
+      return result;
     } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error(`思维导图响应格式错误: ${error.message}`);
+      }
       throw new Error(`思维导图生成失败: ${error.message}`);
     }
   }
@@ -354,12 +363,12 @@ ${content}
     try {
       // 基本语法检查
       const lines = mermaidCode.split('\n').filter(line => line.trim());
-      
+
       // 检查是否有图表类型声明
       const firstLine = lines[0]?.trim();
       const validTypes = ['mindmap', 'graph', 'flowchart', 'gitgraph', 'journey', 'gantt', 'pie', 'quadrantChart'];
       const hasValidType = validTypes.some(type => firstLine?.startsWith(type));
-      
+
       if (!hasValidType) {
         return false;
       }
@@ -395,10 +404,10 @@ ${content}
     // 检查缩进和节点格式
     const indentMatch = line.match(/^(\s*)/);
     const indent = indentMatch ? indentMatch[1].length : 0;
-    
+
     // 移除缩进后的内容
     const content = line.trim();
-    
+
     // 检查是否为有效的节点内容（不为空，不包含特殊字符）
     if (!content || content.length === 0) {
       return false;
@@ -477,7 +486,7 @@ ${content}
       }
 
       const allResults = await Promise.all(promises);
-      
+
       // 合并所有结果
       allResults.forEach(result => {
         Object.assign(results, result);
