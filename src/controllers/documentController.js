@@ -112,9 +112,9 @@ class DocumentController {
         success: true,
         data: result.documents.map(doc => ({
           _id: doc._id,
-          title: doc.title
-        })),
-        pagination: result.pagination
+          title: doc.title,
+          createdAt: doc.createdAt
+        }))
       });
     } catch (error) {
       console.error('List documents error:', error);
