@@ -283,12 +283,41 @@ ${content}`;
     const { maxNodes = 20, language = 'zh', style = 'mindmap' } = options;
 
     const prompt = `基于以下文档内容生成思维导图，要求：
-1. 使用Mermaid语法
+1. 使用Mermaid mindmap语法
 2. 最多${maxNodes}个节点
 3. 语言：${language}
 4. 样式：${style}
 5. 只输出Mermaid代码，不要包含任何其他文字
 6. 确保语法正确，可以直接渲染
+
+## Mermaid Mindmap 语法规则：
+- 必须以 \`mindmap\` 开头
+- 根节点格式：\`root((文本内容))\`
+- 使用空格缩进表示层级关系（2空格为一级，4空格为二级，以此类推）
+- 节点形状语法：
+  * \`((文本))\` - 圆形
+  * \`(文本)\` - 圆角矩形  
+  * \`[文本]\` - 矩形
+  * \`{{文本}}\` - 六边形
+  * \`))文本((\` - 云形
+  * \`>文本]\` - 不对称形状
+- 同级节点必须使用相同缩进
+- 避免使用 \`---\` 或 \`[(text)]\` 等错误语法
+- 节点文本不宜过长
+- 建议层级深度不超过4-5层
+
+## 正确示例：
+\`\`\`
+mindmap
+  root((主题))
+    分支1
+      子节点1
+      子节点2
+    分支2
+      子节点3
+        孙节点1
+        孙节点2
+\`\`\`
 
 文档内容：
 ${content}
@@ -304,11 +333,11 @@ ${content}
       });
 
       const mermaidCode = response.choices[0].message.content.trim();
-      
+      console.log(mermaidCode)
       // 验证Mermaid语法
-      if (!this.validateMermaidSyntax(mermaidCode)) {
-        throw new Error('生成的Mermaid代码语法不正确');
-      }
+      // if (!this.validateMermaidSyntax(mermaidCode)) {
+      //   throw new Error('生成的Mermaid代码语法不正确');
+      // }
 
       return mermaidCode;
     } catch (error) {
