@@ -101,7 +101,7 @@ router.get('/exercises/:exerciseId',
  */
 router.get('/:documentId',
   authenticateToken,
-  documentController.getDocument.bind(documentController)
+  documentController.getAllDatafromDocumentonetime.bind(documentController)
 );
 
 /**

@@ -726,7 +726,55 @@ class DocumentController {
       });
     }
   }
+  /**
+   * 一次性获取文档的特定文件相应总结、概念、测试、练习题等
+   * @param {string} documentId - 文档ID
+   * @param {string} type - 类型（summary, concept, test, exercise）
+   * @returns {Promise<Object>} - 返回特定类型的数据
+   * @throws {Error} - 如果文档不存在或无权访问
 
+  
+  */
+ async getAllDatafromDocumentonetime(req, res) {
+    try {
+      const { documentId } = req.params;
+      const userId = req.user.id;
+      // 验证文档存在且属于当前用户
+      const document = await this.documentService.getDocument(documentId, userId);
+      if (!document) {
+        return res.status(404).json({
+          success: false,
+          message: '文档不存在或无权访问'
+        });
+      }
+      let data;
+
+      // 一次性获取文档的特定文件相应总结、概念、测试、练习题等
+      data = await Promise.all([
+        this.documentService.getDocumentSummary(documentId, userId),
+        this.documentService.getDocumentConcepts(documentId, userId),
+        this.documentService.getDocumentExercises(documentId, userId),
+        this.documentService.getDocumentTests(documentId, userId)
+      ]);
+
+      res.json({
+        success: true,
+        data: {
+          summary: data[0],
+          concepts: data[1],
+          exercises: data[2],
+          tests: data[3]
+        }
+      });
+    } catch (error) {
+      console.error('Get all data from document error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '获取文档数据失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
   /**
    * 格式化文件大小
    */
