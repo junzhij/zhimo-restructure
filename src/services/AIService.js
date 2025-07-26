@@ -1,5 +1,6 @@
 require('dotenv').config();
 const OpenAI = require('openai');
+const { Exercise, MindMap } = require('../models');
 
 // 简单的日志工具
 const logger = {
@@ -147,16 +148,19 @@ ${content}
    * AI出题 - 基于文档内容生成练习题
    * @param {string} content - 文档内容
    * @param {Object} options - 出题选项
-   * @returns {Promise<Array>} 题目数组
+   * @returns {Promise<Object>} 包含练习数据和数据库对象的结果
    */
-  async generateExercises(content, options = {}) {
+  async generateExercises(content,tittle , options = {}) {
     this._checkOpenAIAvailable();
 
     const {
       count = 5,
       types = ['multiple_choice', 'true_false', 'short_answer'],
       difficulty = 'medium',
-      language = 'zh'
+      language = 'zh',
+      documentId,
+      userId,
+      saveToDatabase = true
     } = options;
 
     const prompt = `基于以下文档内容生成${count}道练习题，要求：
@@ -201,7 +205,87 @@ ${content}`;
       });
 
       const result = JSON.parse(response.choices[0].message.content);
-      return result.exercises;
+      const exercises = result.exercises;
+      
+      // 如果需要保存到数据库且提供了必要参数
+      if (saveToDatabase && documentId && userId) {
+        try {
+          logger.debug('开始转换AI生成的题目数据', { exerciseCount: exercises.length });
+          
+          // 转换AI生成的题目格式为数据库格式
+          const questions = exercises.map((exercise, index) => {
+            // 根据题目类型确定正确答案
+            let correctAnswer = '';
+            
+            if (exercise.type === 'short_answer') {
+              correctAnswer = exercise.sample_answer || exercise.correct_answer || exercise.correctAnswer || '参考答案待补充';
+            } else if (exercise.type === 'true_false') {
+              correctAnswer = String(exercise.correct_answer !== undefined ? exercise.correct_answer : 
+                              exercise.correctAnswer !== undefined ? exercise.correctAnswer : 'true');
+            } else if (exercise.type === 'multiple_choice') {
+              correctAnswer = exercise.correct_answer || exercise.correctAnswer || 'A';
+            } else {
+              correctAnswer = exercise.correct_answer || exercise.correctAnswer || exercise.sample_answer || '默认答案';
+            }
+            
+            return {
+              id: `q_${Date.now()}_${index}`,
+              type: exercise.type,
+              question: exercise.question || '题目内容待补充',
+              options: exercise.options || [],
+              correctAnswer: correctAnswer,
+              explanation: exercise.explanation || '',
+              difficulty: this._mapDifficultyToNumber(difficulty),
+              points: 10, // 默认分值
+              tags: [],
+              metadata: {
+                sourceSection: '',
+                keywordsCovered: exercise.key_points || [],
+                estimatedTime: 60
+              }
+            };
+          });
+          
+          logger.debug('题目数据转换完成', { 
+            originalCount: exercises.length, 
+            convertedCount: questions.length,
+            questions: questions.map(q => ({ type: q.type, hasAnswer: !!q.correctAnswer, answer: q.correctAnswer }))
+          });
+          
+          // 创建Exercise对象
+          const exerciseDoc = new Exercise({
+            documentId,
+            userId,
+            title: `${tittle}`,
+            description: `基于文档内容自动生成的${count}道练习题`,
+            questions,
+            metadata: {
+              generationPrompt: `生成${count}道${difficulty}难度的${types.join(', ')}题目`,
+              aiModel: this.model,
+              generationTime: Date.now()
+            }
+          });
+          
+          const savedExercise = await exerciseDoc.save();
+          logger.info('练习题已保存到数据库', { exerciseId: savedExercise._id });
+          
+          return {
+            exercises,
+            databaseObject: savedExercise,
+            saved: true
+          };
+        } catch (dbError) {
+          logger.error('保存练习题到数据库失败', dbError);
+          return {
+            exercises,
+            databaseObject: null,
+            saved: false,
+            error: dbError.message
+          };
+        }
+      }
+      
+      return { exercises, saved: false };
     } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error(`AI出题响应格式错误: ${error.message}`);
@@ -282,7 +366,14 @@ ${content}`;
   async generateMindMap(content, options = {}) {
     this._checkOpenAIAvailable();
 
-    const { maxNodes = 20, language = 'zh', style = 'mindmap' } = options;
+    const { 
+      maxNodes = 20, 
+      language = 'zh', 
+      style = 'mindmap',
+      documentId,
+      userId,
+      saveToDatabase = true
+    } = options;
 
     const prompt = `基于以下文档内容生成思维导图，要求：
 1. 使用Mermaid mindmap语法
@@ -345,13 +436,69 @@ ${content}
         throw new Error('AI返回的JSON格式不正确，缺少title或mermaid字段');
       }
 
-      return result;
+      // 如果需要保存到数据库且提供了必要参数
+      if (saveToDatabase && documentId && userId) {
+        try {
+          // 创建MindMap对象
+          const mindMapDoc = new MindMap({
+            documentId,
+            userId,
+            title: result.title,
+            mermaidContent: result.mermaid,
+            mermaidType: 'mindmap',
+            metadata: {
+              generationPrompt: `生成${maxNodes}个节点的${style}风格思维导图`,
+              aiModel: this.model,
+              generationTime: Date.now()
+            }
+          });
+          
+          const savedMindMap = await mindMapDoc.save();
+          logger.info('思维导图已保存到数据库', { mindMapId: savedMindMap._id });
+          
+          return {
+            title: result.title,
+            mermaid: result.mermaid,
+            databaseObject: savedMindMap,
+            saved: true
+          };
+        } catch (dbError) {
+          logger.error('保存思维导图到数据库失败', dbError);
+          return {
+            title: result.title,
+            mermaid: result.mermaid,
+            databaseObject: null,
+            saved: false,
+            error: dbError.message
+          };
+        }
+      }
+
+      return { 
+        title: result.title, 
+        mermaid: result.mermaid, 
+        saved: false 
+      };
     } catch (error) {
       if (error instanceof SyntaxError) {
         throw new Error(`思维导图响应格式错误: ${error.message}`);
       }
       throw new Error(`思维导图生成失败: ${error.message}`);
     }
+  }
+
+  /**
+   * 将难度字符串映射为数字
+   * @param {string} difficulty - 难度字符串
+   * @returns {number} 难度数字
+   */
+  _mapDifficultyToNumber(difficulty) {
+    const difficultyMap = {
+      'easy': 2,
+      'medium': 3,
+      'hard': 4
+    };
+    return difficultyMap[difficulty] || 3;
   }
 
   /**

@@ -456,15 +456,26 @@ class DocumentController {
         });
       }
 
-      const exercises = await this.aiService.generateExercises(
+      const result = await this.aiService.generateExercises(
         document.markdownContent,
-        { count, types, difficulty, language }
+        document.title,
+        { 
+          count, 
+          types, 
+          difficulty, 
+          language,
+          documentId,
+          userId,
+          saveToDatabase: true
+        }
       );
 
       res.json({
         success: true,
         data: {
-          exercises,
+          exercises: result.exercises,
+          saved: result.saved,
+          databaseId: result.databaseObject?._id,
           options: { count, types, difficulty, language }
         }
       });
@@ -553,16 +564,26 @@ class DocumentController {
         });
       }
 
-      const mindMap = await this.aiService.generateMindMap(
+      const result = await this.aiService.generateMindMap(
         document.markdownContent,
-        { maxNodes, language, style }
+        { 
+          maxNodes, 
+          language, 
+          style,
+          documentId,
+          userId,
+          saveToDatabase: true
+        }
       );
 
       res.json({
         success: true,
         data: {
-          mindMap,
-          isValidSyntax: this.aiService.validateMermaidSyntax(mindMap),
+          title: result.title,
+          mermaid: result.mermaid,
+          saved: result.saved,
+          databaseId: result.databaseObject?._id,
+          isValidSyntax: result.mermaid ? this.aiService.validateMermaidSyntax(result.mermaid) : false,
           options: { maxNodes, language, style }
         }
       });
@@ -596,7 +617,12 @@ class DocumentController {
 
       const results = await this.aiService.processDocument(
         document.markdownContent,
-        options
+        {
+          ...options,
+          documentId,
+          userId,
+          saveToDatabase: true
+        }
       );
 
       res.json({
@@ -608,6 +634,91 @@ class DocumentController {
       res.status(500).json({
         success: false,
         message: error.message || 'AI批量处理失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 获取所有练习题列表
+   */
+  async getExercisesList(req, res) {
+    try {
+      const userId = req.user.id;
+      
+      const Exercise = require('../models/Exercise');
+      const exercises = await Exercise.find({ 
+        userId, 
+        isDeleted: false 
+      })
+      .select('title documentId createdAt')
+      .sort({ createdAt: -1 });
+
+      res.json({
+        success: true,
+        data: exercises.map(exercise => ({
+          id: exercise._id,
+          title: exercise.title,
+          documentId: exercise.documentId,
+          createdAt: exercise.createdAt
+        }))
+      });
+    } catch (error) {
+      console.error('Get exercises list error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '获取练习题列表失败',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  }
+
+  /**
+   * 获取指定练习题详情
+   */
+  async getExerciseDetail(req, res) {
+    try {
+      const { exerciseId } = req.params;
+      const userId = req.user.id;
+      
+      const Exercise = require('../models/Exercise');
+      const exercise = await Exercise.findOne({ 
+        _id: exerciseId, 
+        userId, 
+        isDeleted: false 
+      })
+      .select('title questions metadata settings');
+
+      if (!exercise) {
+        return res.status(404).json({
+          success: false,
+          message: '练习题不存在或无权访问'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: exercise._id,
+          title: exercise.title,
+          questions: exercise.questions,
+          metadata: {
+            totalQuestions: exercise.metadata.totalQuestions,
+            totalPoints: exercise.metadata.totalPoints,
+            estimatedDuration: exercise.metadata.estimatedDuration,
+            questionTypes: exercise.metadata.questionTypes,
+            difficultyDistribution: exercise.metadata.difficultyDistribution
+          },
+          settings: exercise.settings
+        }
+      });
+    } catch (error) {
+      console.error('Get exercise detail error:', error);
+      const statusCode = error.message.includes('不存在') || error.message.includes('无权访问') ? 404 : 500;
+      
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || '获取练习题详情失败',
         error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }

@@ -72,6 +72,28 @@ router.get('/stats',
   documentController.getDocumentStats.bind(documentController)
 );
 
+// 练习题管理路由（必须在 /:documentId 之前）
+
+/**
+ * @route   GET /api/documents/exercises
+ * @desc    获取所有练习题列表
+ * @access  Private
+ */
+router.get('/exercises',
+  authenticateToken,
+  documentController.getExercisesList.bind(documentController)
+);
+
+/**
+ * @route   GET /api/documents/exercises/:exerciseId
+ * @desc    获取指定练习题详情
+ * @access  Private
+ */
+router.get('/exercises/:exerciseId',
+  authenticateToken,
+  documentController.getExerciseDetail.bind(documentController)
+);
+
 /**
  * @route   GET /api/documents/:documentId
  * @desc    获取文档详情

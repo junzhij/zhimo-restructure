@@ -61,7 +61,7 @@ TOKEN=$(curl -s -X POST 127.0.0.1:3000/api/auth/login \
     "password": "Test123456!"
   }' | jq -r '.data.token')
 
-echo "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y"
+echo "Token: Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
 ```
 
 ## 2. 文档管理
@@ -70,13 +70,14 @@ echo "Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNW
 
 ```bash
 curl -X POST 127.0.0.1:3000/api/documents/upload \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -F "document=@tests/example.pdf" \
   -F "title=测试文档" \
   -F "tags=测试,PDF"
 ```
 
 **响应示例:**
+
 ```json
 {
   "success": true,
@@ -98,14 +99,14 @@ curl -X POST 127.0.0.1:3000/api/documents/upload \
 
 ```bash
 curl -X GET 127.0.0.1:3000/api/documents \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y"
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
 ```
 
 **带查询参数:**
 
 ```bash
 curl -X GET "127.0.0.1:3000/api/documents?format=pdf&status=completed&search=测试&limit=10&offset=0" \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y"
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
 ```
 
 ### 获取文档详情
@@ -113,7 +114,7 @@ curl -X GET "127.0.0.1:3000/api/documents?format=pdf&status=completed&search=测
 ```bash
 # 替换 {documentId} 为实际的文档ID
 curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y"
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
 ```
 
 **响应示例:**
@@ -143,7 +144,7 @@ curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf \
 
 ```bash
 curl -X GET 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/download \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -o downloaded_document.pdf
 ```
 
@@ -159,7 +160,7 @@ curl -X GET $BASE_URL/api/documents/{documentId}/markdown \
 ```bash
 # 获取AI重构后的内容（如果可用）
 curl -X GET $BASE_URL/api/documents/{documentId} \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   | jq '.data.restructuredContent'
 ```
 
@@ -169,7 +170,7 @@ curl -X GET $BASE_URL/api/documents/{documentId} \
 
 ```bash
 curl -X PUT 127.0.0.1:3000/api/documents/{documentId} \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "更新后的标题",
@@ -181,7 +182,7 @@ curl -X PUT 127.0.0.1:3000/api/documents/{documentId} \
 
 ```bash
 curl -X DELETE 127.0.0.1:3000/api/documents/{documentId} \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y"
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0"
 ```
 
 ## 3. AI功能
@@ -230,7 +231,7 @@ curl -X GET 127.0.0.1:3000/api/documents/6883d5973da75c7e8069b677/ai/summary \
 
 ```bash
 curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/exercises \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -H "Content-Type: application/json" \
   -d '{
     "count": 5,
@@ -244,7 +245,7 @@ curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/exercises 
 
 ```bash
 curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/concepts \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -H "Content-Type: application/json" \
   -d '{
     "maxConcepts": 10,
@@ -255,8 +256,8 @@ curl -X POST 127.0.0.1:3000/api/documents/688383698d5a1a90b03e4ddf/ai/concepts \
 ### 生成思维导图
 
 ```bash
-curl -X POST 127.0.0.1:3000/api/documents/{documentId}/ai/mindmap \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+curl -X POST 127.0.0.1:3000/api/documents/68844c6a72f62a5ff2e7e75c/ai/mindmap \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -H "Content-Type: application/json" \
   -d '{
     "maxNodes": 20,
@@ -285,7 +286,7 @@ curl -X POST 127.0.0.1:3000/api/documents/{documentId}/ai/mindmap \
 
 ```bash
 curl -X POST 127.0.0.1:3000/api/documents/{documentId}/ai/process \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -H "Content-Type: application/json" \
   -d '{
     "includeRestructure": true,
@@ -322,7 +323,7 @@ REGISTER_RESPONSE=$(curl -s -X POST 127.0.0.1:3000/api/auth/register \
 
 TOKEN=$(echo $REGISTER_RESPONSE | jq -r '.data.token')
 
-if [ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" = "null" ] || [ -z "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" ]; then
+if [ "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" = "null" ] || [ -z "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" ]; then
   echo "⚠️ 注册失败，尝试登录..."
   TOKEN=$(curl -s -X POST 127.0.0.1:3000/api/auth/login \
     -H "Content-Type: application/json" \
@@ -333,7 +334,7 @@ echo "✅ Token获取成功"
 
 echo "📤 上传文档..."
 UPLOAD_RESPONSE=$(curl -s -X POST 127.0.0.1:3000/api/documents/upload \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" \
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" \
   -F "document=@tests/example.pdf" \
   -F "title=测试文档" \
   -F "tags=测试,PDF")
@@ -345,7 +346,7 @@ echo "⏳ 等待文档处理完成..."
 for i in {1..10}; do
   sleep 2
   STATUS_RESPONSE=$(curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID \
-    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y")
+    -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0")
   STATUS=$(echo $STATUS_RESPONSE | jq -r '.data.processingStatus')
   echo "📊 处理状态: $STATUS"
   
@@ -359,20 +360,20 @@ if [ "$STATUS" = "completed" ]; then
   
   echo "📝 获取摘要..."
   curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/summary \
-    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data.summaries[0].content' | head -3
+    -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" | jq '.data.summaries[0].content' | head -3
   
   echo "🧠 获取概念..."
   curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/concepts \
-    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data.concepts[].term'
+    -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" | jq '.data.concepts[].term'
   
   echo "🔄 获取重构内容..."
   curl -s -X GET 127.0.0.1:3000/api/documents/$DOCUMENT_ID/ai/restructure \
-    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data.restructuredContent' | head -3
+    -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" | jq '.data.restructuredContent' | head -3
 fi
 
 echo "📋 获取文档列表..."
 curl -s -X GET 127.0.0.1:3000/api/documents \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODgzODM2NThkNWExYTkwYjAzZTRkZGIiLCJpYXQiOjE3NTM0NDkzMTgsImV4cCI6MTc1NDA1NDExOH0.Q86EVhXWpc5HnIeDnie-3We4pI-154Xvbhwl7t3GN_Y" | jq '.data[] | {id: ._id, title: .title, status: .processingStatus}'
+  -H "Authorization: Bearer Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODg0NGJkNDcyZjYyYTVmZjJlN2U3NTIiLCJpYXQiOjE3NTM1MDA2MjksImV4cCI6MTc1NDEwNTQyOX0.6Bi097rZp6zogIqPJ8Tr3RDiCX6THHfImrW89sEjVj0" | jq '.data[] | {id: ._id, title: .title, status: .processingStatus}'
 
 echo "🎉 测试完成!"
 ```
@@ -438,3 +439,6 @@ echo "🎉 测试完成!"
    - 需要配置有效的OpenAI API密钥
    - AI处理可能需要较长时间
    - 支持多种AI模型和参数配置
+
+
+
