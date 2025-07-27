@@ -2,6 +2,8 @@
 
 智能学习平台后端系统 - AI驱动的文档处理和学习辅助平台
 
+**前端系统请移步至**[zhimo-frontend](https://github.com/junzhij/zhimo-frontend)
+
 ## 功能特性
 
 - 多格式文档上传和解析（PDF、Word、PPT、图片、网页）
