@@ -202,6 +202,7 @@ ${content}`;
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.4,
         max_tokens: this.maxTokens,
+        response_format: { type: "json_object" },
       });
 
       const result = JSON.parse(response.choices[0].message.content);
@@ -346,6 +347,7 @@ ${content}`;
         messages: [{ role: 'user', content: prompt }],
         temperature: this.temperature,
         max_tokens: this.maxTokens,
+        response_format: { type: "json_object" },
       });
 
       const result = JSON.parse(response.choices[0].message.content);
@@ -427,6 +429,7 @@ ${content}
         messages: [{ role: 'user', content: prompt }],
         temperature: this.temperature,
         max_tokens: this.maxTokens,
+        response_format: { type: "json_object" },
       });
 
       const result = JSON.parse(response.choices[0].message.content);
