@@ -38,7 +38,9 @@ class DocumentService {
       'text/markdown': { extension: '.md', category: 'text' },
       'text/x-markdown': { extension: '.md', category: 'text' },
       'image/jpeg': { extension: '.jpg', category: 'image' },
-      'image/png': { extension: '.png', category: 'image' }
+      'image/png': { extension: '.png', category: 'image' },
+      'application/vnd.ms-powerpoint': { extension: '.ppt', category: 'document' },
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': { extension: '.pptx', category: 'document' }
     };
   }
 
